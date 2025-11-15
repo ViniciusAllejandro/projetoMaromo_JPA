@@ -68,4 +68,18 @@ public class AutorDao {
     // transação for confirmada (commit).
 
   }
+
+  @Transactional(readOnly = false)
+
+  public void update(Autor autor) {
+    // O método recebe um objeto Autor que deve ser atualizado no banco de dados.
+
+    // O EntityManager.merge() faz o seguinte:
+    // - Verifica se o objeto passado já existe no banco (pela chave primária).
+    // - Se existir, atualiza os campos no registro correspondente.
+    // - Se não existir, cria um novo registro (dependendo da regra aplicada).
+    // - Retorna uma cópia gerenciada do objeto (mas aqui não capturamos o retorno).
+    this.manager.merge(autor);
+  }
+
 }

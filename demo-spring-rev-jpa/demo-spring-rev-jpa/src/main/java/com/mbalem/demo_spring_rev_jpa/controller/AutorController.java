@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 // 🔹 Importa @PostMapping, usada para mapear requisições HTTP do tipo POST
 //    a um método específico do controller.
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 // 🔹 Informa ao Spring que esta classe é um controlador REST,
@@ -77,5 +79,20 @@ public class AutorController {
     return autor;
     // 🔹 Retorna o próprio objeto Autor salvo.
     // O Spring converte automaticamente esse objeto em JSON na resposta HTTP.
+  }
+
+  // Indica que este método responderá requisições HTTP do tipo PUT,
+  // utilizadas normalmente para atualizar recursos existentes.
+  @PutMapping
+  public Autor atualizar(@RequestBody Autor autor) {
+    // @RequestBody faz o Spring pegar o JSON enviado no corpo da requisição
+    // e converter automaticamente em um objeto Autor preenchido.
+
+    // Chama o método do DAO responsável por atualizar o autor no banco de dados.
+    dao.update(autor);
+
+    // Retorna o próprio objeto Autor atualizado.
+    // O Spring converte esse objeto automaticamente em JSON na resposta HTTP.
+    return autor;
   }
 }
