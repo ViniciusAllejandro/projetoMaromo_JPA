@@ -7,6 +7,7 @@ package com.mbalem.demo_spring_rev_jpa.dao;
 import com.mbalem.demo_spring_rev_jpa.entity.Autor;
 // 🔹 Importa a classe de entidade Autor, que representa a tabela "autores"
 //    no banco de dados. Será usada como tipo genérico para as operações JPA.
+import com.mbalem.demo_spring_rev_jpa.entity.InfoAutor;
 
 import java.util.List;
 
@@ -149,4 +150,47 @@ public class AutorDao {
         .getSingleResult();
   }
 
+  // 🔹 Indica que este método participa de uma transação de escrita (readOnly =
+  // false),
+  // pois ele vai modificar dados no banco de dados.
+  @Transactional(readOnly = false)
+  public Autor saveInfoAutor(InfoAutor infoAutor, Long autorId) {
+
+    // 🔹 Busca o Autor pelo ID informado.
+    // O findById retorna a entidade gerenciada pelo EntityManager,
+    // permitindo que o Hibernate detecte alterações automaticamente (dirty
+    // checking).
+    Autor autor = findById(autorId);
+
+    // 🔹 Associa o objeto InfoAutor ao Autor encontrado.
+    // Como o Autor está em estado "managed", o Hibernate persistirá essa alteração
+    // ao final da transação sem precisar de um merge manual.
+    autor.setInfoAutor(infoAutor);
+
+    // 🔹 Retorna o autor atualizado.
+    // A alteração somente será aplicada no banco após o commit da transação.
+    return autor;
+  }
+
+  // 🔹 Indica que o método é somente leitura.
+  // Melhora performance, evita locks desnecessários e informa ao Hibernate
+  // que não haverá alterações na base.
+  @Transactional(readOnly = true)
+  public List<Autor> findByCargo(String cargo) {
+
+    // 🔹 Cria uma consulta JPQL usando multiline-string (text block).
+    // A consulta busca autores cujo cargo (dentro de InfoAutor)
+    // contenha o valor informado no parâmetro.
+    String query = """
+        select a from Autor a
+        where a.infoAutor.cargo like :cargo
+        order by a.nome asc
+        """;
+
+    // 🔹 Cria e executa a consulta, retornando uma lista de Autores.
+    // O parâmetro "cargo" é convertido para um padrão de busca usando LIKE (%...%).
+    return this.manager.createQuery(query, Autor.class)
+        .setParameter("cargo", "%" + cargo + "%") // 🔹 Adiciona wildcard para busca parcial
+        .getResultList(); // 🔹 Executa a query e retorna os resultados
+  }
 }

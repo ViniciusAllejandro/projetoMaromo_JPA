@@ -37,6 +37,10 @@ public class Autor implements Serializable {
   @Column(name = "sobrenome", length = 45, nullable = false)
   private String sobrenome;
 
+  @OneToOne(cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
+  @JoinColumn(name = "id_info")
+  private InfoAutor infoAutor;
+
   // Métodos getters e setters — usados pelo Hibernate para ler e escrever
   // valores.
   public Long getId() {
@@ -61,6 +65,14 @@ public class Autor implements Serializable {
 
   public void setSobrenome(String sobrenome) {
     this.sobrenome = sobrenome;
+  }
+
+  public InfoAutor getInfoAutor() {
+    return infoAutor;
+  }
+
+  public void setInfoAutor(InfoAutor infoAutor) {
+    this.infoAutor = infoAutor;
   }
 
   // hashCode, equals e toString não são específicos do Spring,

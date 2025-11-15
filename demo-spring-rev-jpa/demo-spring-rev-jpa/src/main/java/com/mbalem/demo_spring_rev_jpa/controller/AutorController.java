@@ -9,6 +9,7 @@ import com.mbalem.demo_spring_rev_jpa.dao.AutorDao;
 
 import com.mbalem.demo_spring_rev_jpa.entity.Autor;
 // 🔹 Importa a classe de entidade Autor, que representa a tabela "autores" no banco de dados.
+import com.mbalem.demo_spring_rev_jpa.entity.InfoAutor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 // 🔹 Importa a anotação @Autowired, usada para injetar automaticamente
@@ -143,6 +144,36 @@ public class AutorController {
   public Long getTotalDeAutores() { // Método para retornar o número total de autores na tabela
 
     return dao.getTotalElements(); // Chama o DAO e retorna a contagem de registros
+  }
+
+  // 🔹 Mapeia requisições HTTP PUT para o endpoint "/autores/{id}/info".
+  // Esse método serve para salvar ou atualizar as informações adicionais
+  // (InfoAutor)
+  // associadas a um autor específico baseado no ID enviado na URL.
+  @PutMapping("/{id}/info")
+  public Autor salvarInfoAutor(
+      @PathVariable Long id, // 🔹 Captura o ID presente na URL. Ex.: /autores/5/info → id = 5
+      @RequestBody InfoAutor infoAutor // 🔹 Recebe o JSON do corpo da requisição e converte para um objeto InfoAutor
+  ) {
+
+    // 🔹 Chama o método do DAO que salva ou atualiza os dados de InfoAutor no
+    // banco,
+    // associando-os ao autor correspondente ao ID.
+    return dao.saveInfoAutor(infoAutor, id);
+  }
+
+  // 🔹 Mapeia requisições HTTP GET para o endpoint "/autores/info".
+  // Esse método permite buscar autores filtrando por um determinado cargo,
+  // enviado como parâmetro na URL.
+  @GetMapping("info")
+  public List<Autor> encontrarByCargo(
+      @RequestParam String cargo // 🔹 Captura o parâmetro "?cargo=valor" enviado na URL.
+                                 // Ex.: /autores/info?cargo=Professor
+  ) {
+
+    // 🔹 Chama o DAO para buscar todos os autores cujo cargo corresponda
+    // ao valor informado no parâmetro "cargo".
+    return dao.findByCargo(cargo);
   }
 
 }
