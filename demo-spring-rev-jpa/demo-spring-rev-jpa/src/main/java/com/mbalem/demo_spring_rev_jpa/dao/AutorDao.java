@@ -8,6 +8,8 @@ import com.mbalem.demo_spring_rev_jpa.entity.Autor;
 // 🔹 Importa a classe de entidade Autor, que representa a tabela "autores"
 //    no banco de dados. Será usada como tipo genérico para as operações JPA.
 
+import java.util.List;
+
 import org.springframework.stereotype.Repository;
 // 🔹 Importa a anotação @Repository, que indica que esta classe é um componente
 //    de acesso a dados (Data Access Object - DAO).  
@@ -80,6 +82,71 @@ public class AutorDao {
     // - Se não existir, cria um novo registro (dependendo da regra aplicada).
     // - Retorna uma cópia gerenciada do objeto (mas aqui não capturamos o retorno).
     this.manager.merge(autor);
+  }
+
+  @Transactional(readOnly = false)
+  public void delete(Long id) {
+
+    // Obtém uma referência "preguiçosa" (proxy) para a entidade.
+    // getReference() *não* carrega imediatamente o objeto do banco — ele fica no
+    // estado "managed"
+    // assim que o proxy é inicializado. Isso é suficiente para o Hibernate
+    // conseguir removê-lo.
+    Autor autorRef = this.manager.getReference(Autor.class, id);
+
+    // A remoção só pode ser realizada em uma entidade que esteja no estado
+    // "managed".
+    // Como getReference() garante isso (mesmo como proxy), o Hibernate consegue
+    // executar o delete.
+    // this.manager.remove(autorRef);
+  }
+
+  // Indica que o método é transacional apenas para leitura (não altera o banco)
+  @Transactional(readOnly = true)
+  public Autor findById(Long id) {
+    // Busca um Autor pelo ID, utilizando o EntityManager
+    return this.manager.find(Autor.class, id);
+  }
+
+  // Método apenas de leitura
+  @Transactional(readOnly = true)
+  public List<Autor> findByAll() {
+
+    // Consulta JPQL que seleciona todos os autores da tabela
+    String query = "select a from Autor a"; // JPQL
+
+    // Executa a consulta, mapeia para a classe Autor e retorna a lista de
+    // resultados
+    return this.manager.createQuery(query, Autor.class).getResultList();
+  }
+
+  // Apenas leitura
+  @Transactional(readOnly = true)
+  public List<Autor> findAllByNomeOrSobrenome(String termo) {
+
+    // Consulta JPQL para buscar autores cujo nome OU sobrenome contenham o termo
+    // informado
+    // OBS: tem um erro aqui: ": termo" não pode ter espaço. Deve ser ":termo"
+    String query = "select a from Autor a " +
+        "where a.nome like :termo OR a.sobrenome like :termo"; // JPQL corrigida
+
+    // Cria a query, define o parâmetro com LIKE e executa retornando a lista
+    // filtrada
+    return this.manager.createQuery(query, Autor.class)
+        .setParameter("termo", "%" + termo + "%") // Adiciona wildcards para busca parcial
+        .getResultList();
+  }
+
+  // Apenas leitura
+  @Transactional(readOnly = true)
+  public Long getTotalElements() {
+
+    // Consulta JPQL que retorna a quantidade total de registros da entidade Autor
+    String query = "select count(1) from Autor a"; // JPQL
+
+    // Executa a consulta e retorna o resultado único (um Long)
+    return this.manager.createQuery(query, Long.class)
+        .getSingleResult();
   }
 
 }

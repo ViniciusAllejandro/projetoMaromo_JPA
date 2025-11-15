@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 // 🔹 Importa a anotação @RequestMapping, usada para definir a rota base (endpoint)
 //    a partir da qual os métodos do controller vão responder.
-
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 // 🔹 Importa @RestController, que combina @Controller + @ResponseBody.
 //    Indica ao Spring que esta classe deve ser registrada como um controlador REST,
@@ -31,7 +31,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 // 🔹 Importa @PostMapping, usada para mapear requisições HTTP do tipo POST
 //    a um método específico do controller.
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import java.util.List;
 
 @RestController
 // 🔹 Informa ao Spring que esta classe é um controlador REST,
@@ -95,4 +98,51 @@ public class AutorController {
     // O Spring converte esse objeto automaticamente em JSON na resposta HTTP.
     return autor;
   }
+
+  @DeleteMapping("{id}")
+  public String remover(@PathVariable Long id) {
+
+    // Chama o método de exclusão no DAO/Repository, passando o ID recebido na URL.
+    // Nesse ponto, assumimos que o método delete(id) já sabe localizar ou criar uma
+    // referência
+    // da entidade e executar a remoção corretamente via JPA/Hibernate.
+    dao.delete(id);
+
+    // Retorna uma mensagem simples confirmando a exclusão.
+    // Em aplicações REST reais, o ideal seria retornar um ResponseEntity com status
+    // HTTP apropriado,
+    // mas aqui retornamos apenas uma String para fins didáticos.
+    return "Autor id " + id + " foi excluido com sucesso.";
+  }
+
+  // Mapeia requisições HTTP GET para o endpoint "/{id}"
+  @GetMapping("{id}")
+  public Autor getById(@PathVariable Long id) { // Recebe o ID passado na URL como parâmetro
+
+    return dao.findById(id); // Chama o DAO para buscar o Autor pelo ID e retorna o resultado
+  }
+
+  // Mapeia requisições HTTP GET para o endpoint "/"
+  @GetMapping
+  public List<Autor> getAll() { // Método para retornar todos os autores cadastrados
+
+    return dao.findByAll(); // Chama o DAO e retorna a lista completa de Autores
+  }
+
+  // Mapeia requisições GET para "/nomeOrSobrenome"
+  @GetMapping("nomeOrSobrenome")
+  public List<Autor> getAutoresByNomeOrSobrenome(@RequestParam String termo) {
+    // Recebe um parâmetro de consulta da URL ?termo=valor
+
+    return dao.findAllByNomeOrSobrenome(termo);
+    // Busca autores cujo nome OU sobrenome contenham o termo informado
+  }
+
+  // Mapeia GET para "/total"
+  @GetMapping("total")
+  public Long getTotalDeAutores() { // Método para retornar o número total de autores na tabela
+
+    return dao.getTotalElements(); // Chama o DAO e retorna a contagem de registros
+  }
+
 }
